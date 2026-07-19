@@ -40,6 +40,17 @@ const (
 	ErrBusy           = -32003
 	ErrCapacity       = -32004
 	ErrPolicyRejected = -32005
+
+	ErrFileOutsideWorkspace = -32100
+	ErrFileStale            = -32101
+	ErrFileMatchNotFound    = -32102
+	ErrFileMatchCount       = -32103
+	ErrFileTooLarge         = -32104
+	ErrFileBinary           = -32105
+	ErrFileAlreadyExists    = -32106
+	ErrFileSymlink          = -32107
+	ErrFileRollbackConflict = -32108
+	ErrFileInvalidOperation = -32109
 )
 
 func NewResponse(id json.RawMessage, result any) Response {

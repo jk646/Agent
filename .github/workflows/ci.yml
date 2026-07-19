@@ -19,3 +19,6 @@ jobs:
       - run: go test -race ./...
       - run: go vet ./...
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/shell-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/shell-tool-console
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-tool-console
