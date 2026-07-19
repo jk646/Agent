@@ -22,3 +22,5 @@ jobs:
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/shell-tool-console
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-tool
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-tool-console
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-search-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-search-tool-console

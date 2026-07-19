@@ -51,6 +51,15 @@ const (
 	ErrFileSymlink          = -32107
 	ErrFileRollbackConflict = -32108
 	ErrFileInvalidOperation = -32109
+
+	ErrSearchOutsideWorkspace = -32200
+	ErrSearchSymlink          = -32201
+	ErrSearchInvalidRequest   = -32202
+	ErrSearchTooLarge         = -32203
+	ErrSearchCapacity         = -32204
+	ErrSearchDuplicateID      = -32205
+	ErrSearchNotActive        = -32206
+	ErrSearchCanceled         = -32207
 )
 
 func NewResponse(id json.RawMessage, result any) Response {

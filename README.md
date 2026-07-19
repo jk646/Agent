@@ -1,6 +1,6 @@
 # Agent Linux Tools
 
-Independent Linux-native Shell and File services for AI agents. Both expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
+Independent Linux-native Shell, File Edit, and File Search services for AI agents. All three expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
 
 ## Features
 
@@ -14,6 +14,8 @@ Independent Linux-native Shell and File services for AI agents. Both expose JSON
 - Independent File Tool on `/run/agent/file-tool.sock`
 - Workspace-confined file queries, exact edits, atomic batches, dry-run diffs, and rollback
 - SHA-256 concurrency checks and symlink escape protection
+- Independent read-only File Search Tool on `/run/agent/file-search-tool.sock`
+- Ranked name/Glob search, metadata filters, content regex, context lines, pagination, and cancellation
 
 ## Build and run
 
@@ -47,6 +49,16 @@ go build -o bin/file-tool-console ./cmd/file-tool-console
 ```
 
 See `docs/file-protocol.md` for the complete File Tool interface.
+
+The File Search Tool is a third independent binary:
+
+```bash
+go build -o bin/file-search-tool ./cmd/file-search-tool
+go build -o bin/file-search-tool-console ./cmd/file-search-tool-console
+./bin/file-search-tool --socket /tmp/file-search-tool.sock --workspace /workspace
+```
+
+See `docs/file-search-protocol.md` for the complete search interface.
 
 ## Interactive test console
 
@@ -118,6 +130,25 @@ rollback filetx-...
 
 Copy the `transaction_id` returned by `replace-json` into the `rollback` command. `replace-json`, `copy-json`, `move-json`, `delete-json`, and `chmod-json` automatically query the current SHA-256 value for convenient manual testing. Use `help` for all commands and `call <method> <json>` to send arbitrary parameters.
 
+## Interactive File Search Tool test
+
+From PowerShell, start the independent read-only search server and console:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-file-search.ps1
+```
+
+By default the search workspace is this repository. At the `file-search-tool>` prompt, enter:
+
+```text
+find server . 20
+glob *.go . 100
+find-json {"path":".","name":"manager","type":"file","extensions":[".go"],"max_depth":8,"limit":50}
+content-json {"path":".","query":"JSON-RPC","file_pattern":"*.go","context_before":1,"context_after":1,"limit":50}
+```
+
+Use `-Workspace /some/linux/path` to scan a different WSL directory. The search service is read-only and does not invoke the Shell Tool or File Edit Tool.
+
 ## Configuration
 
 | Environment variable | Default |
@@ -150,5 +181,18 @@ File Tool configuration uses the same independent pattern:
 | `FILE_TOOL_MAX_TRANSACTION_BYTES` | `67108864` |
 | `FILE_TOOL_MAX_CONCURRENT` | `8` |
 | `FILE_TOOL_JOURNAL_TTL` | `15m` |
+
+File Search Tool configuration is independent:
+
+| Environment variable | Default |
+| --- | --- |
+| `FILE_SEARCH_TOOL_TRANSPORT` | `unix` |
+| `FILE_SEARCH_TOOL_SOCKET` | `/run/agent/file-search-tool.sock` |
+| `FILE_SEARCH_TOOL_WORKSPACE` | `/workspace` |
+| `FILE_SEARCH_TOOL_MAX_FILE_BYTES` | `8388608` |
+| `FILE_SEARCH_TOOL_MAX_RESULTS` | `1000` |
+| `FILE_SEARCH_TOOL_MAX_SCANNED_ENTRIES` | `200000` |
+| `FILE_SEARCH_TOOL_MAX_DEPTH` | `64` |
+| `FILE_SEARCH_TOOL_MAX_CONCURRENT` | `8` |
 
 Docker is the primary security boundary. The service intentionally does not parse command semantics or maintain a command blacklist; callers can replace the default allow-all `ExecutionPolicy` when embedding the server.
