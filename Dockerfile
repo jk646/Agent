@@ -8,7 +8,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/shell-t
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-tool ./cmd/file-tool \
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-tool-console ./cmd/file-tool-console \
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-search-tool ./cmd/file-search-tool \
-    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-search-tool-console ./cmd/file-search-tool-console
+    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-search-tool-console ./cmd/file-search-tool-console \
+    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-file-tool ./cmd/read-file-tool \
+    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-file-tool-console ./cmd/read-file-tool-console
 
 FROM debian:bookworm-slim
 RUN useradd --create-home --uid 10001 agent \
@@ -20,6 +22,8 @@ COPY --from=build /out/file-tool /usr/local/bin/file-tool
 COPY --from=build /out/file-tool-console /usr/local/bin/file-tool-console
 COPY --from=build /out/file-search-tool /usr/local/bin/file-search-tool
 COPY --from=build /out/file-search-tool-console /usr/local/bin/file-search-tool-console
+COPY --from=build /out/read-file-tool /usr/local/bin/read-file-tool
+COPY --from=build /out/read-file-tool-console /usr/local/bin/read-file-tool-console
 USER agent
 WORKDIR /workspace
 ENV SHELL_TOOL_SOCKET=/run/agent/shell-tool.sock
@@ -27,4 +31,6 @@ ENV FILE_TOOL_SOCKET=/run/agent/file-tool.sock
 ENV FILE_TOOL_WORKSPACE=/workspace
 ENV FILE_SEARCH_TOOL_SOCKET=/run/agent/file-search-tool.sock
 ENV FILE_SEARCH_TOOL_WORKSPACE=/workspace
+ENV READ_FILE_TOOL_SOCKET=/run/agent/read-file-tool.sock
+ENV READ_FILE_TOOL_WORKSPACE=/workspace
 ENTRYPOINT ["/usr/local/bin/shell-tool"]

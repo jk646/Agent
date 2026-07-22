@@ -60,6 +60,18 @@ const (
 	ErrSearchDuplicateID      = -32205
 	ErrSearchNotActive        = -32206
 	ErrSearchCanceled         = -32207
+
+	ErrReadOutsideWorkspace    = -32300
+	ErrReadSymlink             = -32301
+	ErrReadInvalidRequest      = -32302
+	ErrReadTooLarge            = -32303
+	ErrReadUnsupportedEncoding = -32304
+	ErrReadCapacity            = -32305
+	ErrReadDuplicateID         = -32306
+	ErrReadNotActive           = -32307
+	ErrReadCanceled            = -32308
+	ErrReadFileChanged         = -32309
+	ErrReadNotRegular          = -32310
 )
 
 func NewResponse(id json.RawMessage, result any) Response {

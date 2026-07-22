@@ -1,6 +1,6 @@
 # Agent Linux Tools
 
-Independent Linux-native Shell, File Edit, and File Search services for AI agents. All three expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
+Independent Linux-native Shell, File Edit, File Search, and Read File services for AI agents. All four expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
 
 ## Features
 
@@ -16,6 +16,8 @@ Independent Linux-native Shell, File Edit, and File Search services for AI agent
 - SHA-256 concurrency checks and symlink escape protection
 - Independent read-only File Search Tool on `/run/agent/file-search-tool.sock`
 - Ranked name/Glob search, metadata filters, content regex, context lines, pagination, and cancellation
+- Independent Read File Tool on `/run/agent/read-file-tool.sock`
+- UTF-8/UTF-16 text, line and character ranges, Base64 binary chunks, SHA-256, pagination, and cancellation
 
 ## Build and run
 
@@ -59,6 +61,16 @@ go build -o bin/file-search-tool-console ./cmd/file-search-tool-console
 ```
 
 See `docs/file-search-protocol.md` for the complete search interface.
+
+The Read File Tool is a fourth independent binary:
+
+```bash
+go build -o bin/read-file-tool ./cmd/read-file-tool
+go build -o bin/read-file-tool-console ./cmd/read-file-tool-console
+./bin/read-file-tool --socket /tmp/read-file-tool.sock --workspace /workspace
+```
+
+See `docs/read-file-protocol.md` for the complete read interface.
 
 ## Interactive test console
 
@@ -149,6 +161,27 @@ content-json {"path":".","query":"JSON-RPC","file_pattern":"*.go","context_befor
 
 Use `-Workspace /some/linux/path` to scan a different WSL directory. The search service is read-only and does not invoke the Shell Tool or File Edit Tool.
 
+## Interactive Read File Tool test
+
+From PowerShell, start the independent read server and console:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-read-file.ps1
+```
+
+By default the read workspace is this repository. At the `read-file-tool>` prompt, enter:
+
+```text
+stat README.md
+read README.md 1 30
+lines-json {"path":"README.md","start_line":10,"end_line":20,"include_line_numbers":true}
+text-json {"path":"README.md","start_char":0,"end_char":200}
+bytes README.md 0 64
+hash README.md
+```
+
+Use `-Workspace /some/linux/path` to read another WSL directory. Binary data is returned as Base64; the service never modifies files or calls another Tool.
+
 ## Configuration
 
 | Environment variable | Default |
@@ -194,5 +227,18 @@ File Search Tool configuration is independent:
 | `FILE_SEARCH_TOOL_MAX_SCANNED_ENTRIES` | `200000` |
 | `FILE_SEARCH_TOOL_MAX_DEPTH` | `64` |
 | `FILE_SEARCH_TOOL_MAX_CONCURRENT` | `8` |
+
+Read File Tool configuration is independent:
+
+| Environment variable | Default |
+| --- | --- |
+| `READ_FILE_TOOL_TRANSPORT` | `unix` |
+| `READ_FILE_TOOL_SOCKET` | `/run/agent/read-file-tool.sock` |
+| `READ_FILE_TOOL_WORKSPACE` | `/workspace` |
+| `READ_FILE_TOOL_MAX_TEXT_BYTES` | `8388608` |
+| `READ_FILE_TOOL_MAX_CHUNK_BYTES` | `1048576` |
+| `READ_FILE_TOOL_MAX_HASH_BYTES` | `1073741824` |
+| `READ_FILE_TOOL_MAX_CONCURRENT` | `8` |
+| `READ_FILE_TOOL_MAX_BATCH_ITEMS` | `20` |
 
 Docker is the primary security boundary. The service intentionally does not parse command semantics or maintain a command blacklist; callers can replace the default allow-all `ExecutionPolicy` when embedding the server.
