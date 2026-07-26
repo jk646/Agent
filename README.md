@@ -1,6 +1,6 @@
 # Agent Linux Tools
 
-Independent Linux-native Shell, File Edit, File Search, and Read File services for AI agents. All four expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
+Independent Linux-native Shell, File Edit, File Search, Read File, Read Folder, Search Text, and Write File services for AI agents. All seven expose JSON-RPC 2.0 over separate Unix domain sockets or stdio.
 
 ## Features
 
@@ -18,6 +18,12 @@ Independent Linux-native Shell, File Edit, File Search, and Read File services f
 - Ranked name/Glob search, metadata filters, content regex, context lines, pagination, and cancellation
 - Independent Read File Tool on `/run/agent/read-file-tool.sock`
 - UTF-8/UTF-16 text, line and character ranges, Base64 binary chunks, SHA-256, pagination, and cancellation
+- Independent Read Folder Tool on `/run/agent/read-folder-tool.sock`
+- Folder metadata, filtered lists, trees, summaries, snapshots, comparisons, pagination, and cancellation
+- Independent Search Text Tool on `/run/agent/search-text-tool.sock`
+- Literal, RE2 regular expression, multi-pattern, context, paths-only, counts, UTF-8/UTF-16, pagination, and cancellation
+- Independent Write File Tool on `/run/agent/write-file-tool.sock`
+- Atomic create, overwrite, append, offset writes, batches, previews, SHA-256 guards, and rollback
 
 ## Build and run
 
@@ -71,6 +77,36 @@ go build -o bin/read-file-tool-console ./cmd/read-file-tool-console
 ```
 
 See `docs/read-file-protocol.md` for the complete read interface.
+
+The Read Folder Tool is a fifth independent binary:
+
+```bash
+go build -o bin/read-folder-tool ./cmd/read-folder-tool
+go build -o bin/read-folder-tool-console ./cmd/read-folder-tool-console
+./bin/read-folder-tool --socket /tmp/read-folder-tool.sock --workspace /workspace
+```
+
+See `docs/read-folder-protocol.md` for the complete folder interface.
+
+The Search Text Tool is a sixth independent binary and does not invoke Shell or system `grep`:
+
+```bash
+go build -o bin/search-text-tool ./cmd/search-text-tool
+go build -o bin/search-text-tool-console ./cmd/search-text-tool-console
+./bin/search-text-tool --socket /tmp/search-text-tool.sock --workspace /workspace
+```
+
+See `docs/search-text-protocol.md` for the complete text search interface.
+
+The Write File Tool is a seventh independent binary. It writes complete content but does not perform text replacements or invoke another Tool:
+
+```bash
+go build -o bin/write-file-tool ./cmd/write-file-tool
+go build -o bin/write-file-tool-console ./cmd/write-file-tool-console
+./bin/write-file-tool --socket /tmp/write-file-tool.sock --workspace /workspace
+```
+
+See `docs/write-file-protocol.md` for its complete interface.
 
 ## Interactive test console
 
@@ -182,6 +218,68 @@ hash README.md
 
 Use `-Workspace /some/linux/path` to read another WSL directory. Binary data is returned as Base64; the service never modifies files or calls another Tool.
 
+## Interactive Read Folder Tool test
+
+From PowerShell, start the independent folder reader and console:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-read-folder.ps1
+```
+
+By default the workspace is this repository. At the `read-folder-tool>` prompt, enter:
+
+```text
+stat .
+list internal 2 100
+tree cmd 3
+summary . 10
+snapshot internal 3
+list-json {"path":".","depth":3,"extensions":[".go"],"sort_by":"size","sort_order":"desc","limit":50}
+```
+
+The service reads folder structure and metadata only. File contents are not read unless a snapshot explicitly enables bounded file hashing.
+
+## Interactive Search Text Tool test
+
+From PowerShell, start the independent text search server and console in WSL:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-search-text.ps1
+```
+
+At the `search-text-tool>` prompt, enter:
+
+```text
+search TODO . 50
+regex TODO|FIXME . 100
+search-json {"path":".","query":"JSON-RPC","extensions":[".md"],"context_before":1,"context_after":1}
+multi-json {"path":".","patterns":[{"id":"todo","query":"TODO"},{"id":"fixme","query":"FIXME"}],"extensions":["go"]}
+files-json {"path":".","query":"package","include_patterns":["**/*.go"]}
+count error internal 100
+```
+
+The service uses Go RE2 matching in-process, skips symlinks and binary files, and never calls another Tool.
+
+## Interactive Write File Tool test
+
+From PowerShell, start the independent writer and console in WSL:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-write-file.ps1
+```
+
+The default workspace is `/tmp/agent-write-file-workspace`. At the `write-file-tool>` prompt, enter:
+
+```text
+create-json {"path":"demo.txt","content":"hello\n","create_parents":true}
+append-json {"path":"demo.txt","content":"next line","add_newline":true}
+preview-json {"operations":[{"kind":"overwrite","path":"demo.txt","content":"preview only\n"}]}
+overwrite-json {"path":"demo.txt","content":"updated\n"}
+rollback writetx-...
+```
+
+Copy the returned `transaction_id` into `rollback`. Binary data uses `data_base64`.
+
 ## Configuration
 
 | Environment variable | Default |
@@ -240,5 +338,53 @@ Read File Tool configuration is independent:
 | `READ_FILE_TOOL_MAX_HASH_BYTES` | `1073741824` |
 | `READ_FILE_TOOL_MAX_CONCURRENT` | `8` |
 | `READ_FILE_TOOL_MAX_BATCH_ITEMS` | `20` |
+
+Read Folder Tool configuration is independent:
+
+| Environment variable | Default |
+| --- | --- |
+| `READ_FOLDER_TOOL_TRANSPORT` | `unix` |
+| `READ_FOLDER_TOOL_SOCKET` | `/run/agent/read-folder-tool.sock` |
+| `READ_FOLDER_TOOL_WORKSPACE` | `/workspace` |
+| `READ_FOLDER_TOOL_MAX_DEPTH` | `32` |
+| `READ_FOLDER_TOOL_MAX_SCANNED_ENTRIES` | `100000` |
+| `READ_FOLDER_TOOL_MAX_RESULTS` | `5000` |
+| `READ_FOLDER_TOOL_DEFAULT_LIMIT` | `100` |
+| `READ_FOLDER_TOOL_MAX_HASH_BYTES` | `67108864` |
+| `READ_FOLDER_TOOL_MAX_CONCURRENT` | `8` |
+| `READ_FOLDER_TOOL_MAX_BATCH_ITEMS` | `20` |
+
+Search Text Tool configuration is independent:
+
+| Environment variable | Default |
+| --- | --- |
+| `SEARCH_TEXT_TOOL_TRANSPORT` | `unix` |
+| `SEARCH_TEXT_TOOL_SOCKET` | `/run/agent/search-text-tool.sock` |
+| `SEARCH_TEXT_TOOL_WORKSPACE` | `/workspace` |
+| `SEARCH_TEXT_TOOL_MAX_DEPTH` | `32` |
+| `SEARCH_TEXT_TOOL_MAX_SCANNED_FILES` | `100000` |
+| `SEARCH_TEXT_TOOL_MAX_FILE_BYTES` | `8388608` |
+| `SEARCH_TEXT_TOOL_MAX_RESULTS` | `1000` |
+| `SEARCH_TEXT_TOOL_DEFAULT_LIMIT` | `100` |
+| `SEARCH_TEXT_TOOL_MAX_MATCHES_PER_FILE` | `100` |
+| `SEARCH_TEXT_TOOL_MAX_CONTEXT_LINES` | `20` |
+| `SEARCH_TEXT_TOOL_MAX_CONCURRENT` | `8` |
+| `SEARCH_TEXT_TOOL_MAX_BATCH_ITEMS` | `20` |
+
+Write File Tool configuration is independent:
+
+| Environment variable | Default |
+| --- | --- |
+| `WRITE_FILE_TOOL_TRANSPORT` | `unix` |
+| `WRITE_FILE_TOOL_SOCKET` | `/run/agent/write-file-tool.sock` |
+| `WRITE_FILE_TOOL_WORKSPACE` | `/workspace` |
+| `WRITE_FILE_TOOL_TEMP_DIR` | `/tmp/agent-write-file` |
+| `WRITE_FILE_TOOL_MAX_MESSAGE_BYTES` | `16777216` |
+| `WRITE_FILE_TOOL_MAX_FILE_BYTES` | `8388608` |
+| `WRITE_FILE_TOOL_MAX_BATCH_FILES` | `100` |
+| `WRITE_FILE_TOOL_MAX_BATCH_BYTES` | `67108864` |
+| `WRITE_FILE_TOOL_MAX_ROLLBACK_BYTES` | `268435456` |
+| `WRITE_FILE_TOOL_MAX_CONCURRENT` | `8` |
+| `WRITE_FILE_TOOL_JOURNAL_TTL` | `15m` |
 
 Docker is the primary security boundary. The service intentionally does not parse command semantics or maintain a command blacklist; callers can replace the default allow-all `ExecutionPolicy` when embedding the server.

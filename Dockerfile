@@ -10,7 +10,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/shell-t
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-search-tool ./cmd/file-search-tool \
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/file-search-tool-console ./cmd/file-search-tool-console \
     && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-file-tool ./cmd/read-file-tool \
-    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-file-tool-console ./cmd/read-file-tool-console
+    && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-file-tool-console ./cmd/read-file-tool-console \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-folder-tool ./cmd/read-folder-tool \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/read-folder-tool-console ./cmd/read-folder-tool-console \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/search-text-tool ./cmd/search-text-tool \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/search-text-tool-console ./cmd/search-text-tool-console \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/write-file-tool ./cmd/write-file-tool \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/write-file-tool-console ./cmd/write-file-tool-console
 
 FROM debian:bookworm-slim
 RUN useradd --create-home --uid 10001 agent \
@@ -24,6 +30,12 @@ COPY --from=build /out/file-search-tool /usr/local/bin/file-search-tool
 COPY --from=build /out/file-search-tool-console /usr/local/bin/file-search-tool-console
 COPY --from=build /out/read-file-tool /usr/local/bin/read-file-tool
 COPY --from=build /out/read-file-tool-console /usr/local/bin/read-file-tool-console
+COPY --from=build /out/read-folder-tool /usr/local/bin/read-folder-tool
+COPY --from=build /out/read-folder-tool-console /usr/local/bin/read-folder-tool-console
+COPY --from=build /out/search-text-tool /usr/local/bin/search-text-tool
+COPY --from=build /out/search-text-tool-console /usr/local/bin/search-text-tool-console
+COPY --from=build /out/write-file-tool /usr/local/bin/write-file-tool
+COPY --from=build /out/write-file-tool-console /usr/local/bin/write-file-tool-console
 USER agent
 WORKDIR /workspace
 ENV SHELL_TOOL_SOCKET=/run/agent/shell-tool.sock
@@ -33,4 +45,11 @@ ENV FILE_SEARCH_TOOL_SOCKET=/run/agent/file-search-tool.sock
 ENV FILE_SEARCH_TOOL_WORKSPACE=/workspace
 ENV READ_FILE_TOOL_SOCKET=/run/agent/read-file-tool.sock
 ENV READ_FILE_TOOL_WORKSPACE=/workspace
+ENV READ_FOLDER_TOOL_SOCKET=/run/agent/read-folder-tool.sock
+ENV READ_FOLDER_TOOL_WORKSPACE=/workspace
+ENV SEARCH_TEXT_TOOL_SOCKET=/run/agent/search-text-tool.sock
+ENV SEARCH_TEXT_TOOL_WORKSPACE=/workspace
+ENV WRITE_FILE_TOOL_SOCKET=/run/agent/write-file-tool.sock
+ENV WRITE_FILE_TOOL_WORKSPACE=/workspace
+ENV WRITE_FILE_TOOL_TEMP_DIR=/tmp/agent-write-file
 ENTRYPOINT ["/usr/local/bin/shell-tool"]

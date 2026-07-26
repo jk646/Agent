@@ -26,3 +26,9 @@ jobs:
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/file-search-tool-console
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/read-file-tool
       - run: CGO_ENABLED=0 go build -trimpath ./cmd/read-file-tool-console
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/read-folder-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/read-folder-tool-console
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/search-text-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/search-text-tool-console
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/write-file-tool
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/write-file-tool-console

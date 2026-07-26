@@ -72,6 +72,40 @@ const (
 	ErrReadCanceled            = -32308
 	ErrReadFileChanged         = -32309
 	ErrReadNotRegular          = -32310
+
+	ErrFolderOutsideWorkspace = -32400
+	ErrFolderSymlink          = -32401
+	ErrFolderInvalidRequest   = -32402
+	ErrFolderTooLarge         = -32403
+	ErrFolderCapacity         = -32404
+	ErrFolderDuplicateID      = -32405
+	ErrFolderNotActive        = -32406
+	ErrFolderCanceled         = -32407
+	ErrFolderNotFolder        = -32408
+
+	ErrTextSearchOutsideWorkspace = -32500
+	ErrTextSearchSymlink          = -32501
+	ErrTextSearchInvalidRequest   = -32502
+	ErrTextSearchLimit            = -32503
+	ErrTextSearchEncoding         = -32504
+	ErrTextSearchCapacity         = -32505
+	ErrTextSearchDuplicateID      = -32506
+	ErrTextSearchNotActive        = -32507
+	ErrTextSearchCanceled         = -32508
+
+	ErrWriteOutsideWorkspace = -32520
+	ErrWriteSymlink          = -32521
+	ErrWriteInvalidRequest   = -32522
+	ErrWriteTooLarge         = -32523
+	ErrWriteStale            = -32524
+	ErrWriteAlreadyExists    = -32525
+	ErrWriteUnsupportedType  = -32526
+	ErrWriteCapacity         = -32527
+	ErrWriteDuplicateID      = -32528
+	ErrWriteNotActive        = -32529
+	ErrWriteRollbackConflict = -32530
+	ErrWriteTransaction      = -32531
+	ErrWriteCanceled         = -32532
 )
 
 func NewResponse(id json.RawMessage, result any) Response {
