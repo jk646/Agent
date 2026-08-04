@@ -24,6 +24,8 @@ Independent Linux-native Shell, File Edit, File Search, Read File, Read Folder, 
 - Literal, RE2 regular expression, multi-pattern, context, paths-only, counts, UTF-8/UTF-16, pagination, and cancellation
 - Independent Write File Tool on `/run/agent/write-file-tool.sock`
 - Atomic create, overwrite, append, offset writes, batches, previews, SHA-256 guards, and rollback
+- Config-driven Agent Orchestrator on `/run/agent/orchestrator.sock`
+- Dynamic Tool registration, prefix routing, health discovery, serial/parallel batches, hot reload, and Tool event forwarding
 
 ## Build and run
 
@@ -107,6 +109,17 @@ go build -o bin/write-file-tool-console ./cmd/write-file-tool-console
 ```
 
 See `docs/write-file-protocol.md` for its complete interface.
+
+The Agent Orchestrator connects all Tool sockets without importing their business packages:
+
+```bash
+go build -o bin/agent-orchestrator ./cmd/agent-orchestrator
+go build -o bin/agent-orchestrator-console ./cmd/agent-orchestrator-console
+go build -o bin/agent-orchestrator-load ./cmd/agent-orchestrator-load
+./bin/agent-orchestrator --tools-config ./configs/orchestrator-tools.json
+```
+
+Tool registration is configuration-driven. See `docs/orchestrator-protocol.md` for routing, batching, events, and adding future Tools.
 
 ## Interactive test console
 
@@ -280,6 +293,39 @@ rollback writetx-...
 
 Copy the returned `transaction_id` into `rollback`. Binary data uses `data_base64`.
 
+## Interactive Orchestrator test
+
+Start all seven Tools, the Orchestrator, and its console in WSL:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-wsl-orchestrator.ps1
+```
+
+The stack uses `/tmp/agent-orchestrator-workspace`, so write tests do not modify the repository. At the `orchestrator>` prompt, enter:
+
+```text
+tools discover
+route read.lines
+call auto read.lines {"path":"README.md","start_line":1,"end_line":5}
+call search-text search_text.search {"path":".","query":"TODO","limit":10}
+call write-file write_file.create {"path":"demo.txt","content":"hello\n"}
+health
+```
+
+To add a future Tool, append its `name`, `socket`, and `method_prefixes` to the Tool registry JSON, then enter `reload`. No Orchestrator code changes are required.
+
+Run a repeatable local performance scenario with the load client:
+
+```bash
+go run ./cmd/agent-orchestrator-load \
+  -socket /tmp/agent-orchestrator/orchestrator.sock \
+  -method read.lines \
+  -params-file ./configs/load/read-lines.json \
+  -requests 1000 -concurrency 8
+```
+
+The report includes throughput, error count, mean latency, and P50/P95/P99 latency. Parameter files support `{{id}}` and `{{run}}` placeholders for unique write paths.
+
 ## Configuration
 
 | Environment variable | Default |
@@ -386,5 +432,17 @@ Write File Tool configuration is independent:
 | `WRITE_FILE_TOOL_MAX_ROLLBACK_BYTES` | `268435456` |
 | `WRITE_FILE_TOOL_MAX_CONCURRENT` | `8` |
 | `WRITE_FILE_TOOL_JOURNAL_TTL` | `15m` |
+
+Agent Orchestrator configuration:
+
+| Environment variable | Default |
+| --- | --- |
+| `AGENT_ORCHESTRATOR_TRANSPORT` | `unix` |
+| `AGENT_ORCHESTRATOR_SOCKET` | `/run/agent/orchestrator.sock` |
+| `AGENT_ORCHESTRATOR_TOOLS_FILE` | `/etc/agent/orchestrator-tools.json` |
+| `AGENT_ORCHESTRATOR_MAX_MESSAGE_BYTES` | `16777216` |
+| `AGENT_ORCHESTRATOR_MAX_CONCURRENT` | `32` |
+| `AGENT_ORCHESTRATOR_DEFAULT_TIMEOUT` | `2m` |
+| `AGENT_ORCHESTRATOR_SHUTDOWN_GRACE` | `5s` |
 
 Docker is the primary security boundary. The service intentionally does not parse command semantics or maintain a command blacklist; callers can replace the default allow-all `ExecutionPolicy` when embedding the server.

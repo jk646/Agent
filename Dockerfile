@@ -16,12 +16,14 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/shell-t
 	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/search-text-tool ./cmd/search-text-tool \
 	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/search-text-tool-console ./cmd/search-text-tool-console \
 	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/write-file-tool ./cmd/write-file-tool \
-	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/write-file-tool-console ./cmd/write-file-tool-console
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/write-file-tool-console ./cmd/write-file-tool-console \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/agent-orchestrator ./cmd/agent-orchestrator \
+	&& CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/agent-orchestrator-console ./cmd/agent-orchestrator-console
 
 FROM debian:bookworm-slim
 RUN useradd --create-home --uid 10001 agent \
-    && mkdir -p /run/agent /tmp/agent-shell /tmp/agent-file-tool /workspace \
-    && chown -R agent:agent /run/agent /tmp/agent-shell /tmp/agent-file-tool /workspace
+    && mkdir -p /run/agent /tmp/agent-shell /tmp/agent-file-tool /tmp/agent-write-file /etc/agent /workspace \
+    && chown -R agent:agent /run/agent /tmp/agent-shell /tmp/agent-file-tool /tmp/agent-write-file /workspace
 COPY --from=build /out/shell-tool /usr/local/bin/shell-tool
 COPY --from=build /out/shell-tool-console /usr/local/bin/shell-tool-console
 COPY --from=build /out/file-tool /usr/local/bin/file-tool
@@ -36,6 +38,9 @@ COPY --from=build /out/search-text-tool /usr/local/bin/search-text-tool
 COPY --from=build /out/search-text-tool-console /usr/local/bin/search-text-tool-console
 COPY --from=build /out/write-file-tool /usr/local/bin/write-file-tool
 COPY --from=build /out/write-file-tool-console /usr/local/bin/write-file-tool-console
+COPY --from=build /out/agent-orchestrator /usr/local/bin/agent-orchestrator
+COPY --from=build /out/agent-orchestrator-console /usr/local/bin/agent-orchestrator-console
+COPY configs/orchestrator-tools.json /etc/agent/orchestrator-tools.json
 USER agent
 WORKDIR /workspace
 ENV SHELL_TOOL_SOCKET=/run/agent/shell-tool.sock
@@ -52,4 +57,6 @@ ENV SEARCH_TEXT_TOOL_WORKSPACE=/workspace
 ENV WRITE_FILE_TOOL_SOCKET=/run/agent/write-file-tool.sock
 ENV WRITE_FILE_TOOL_WORKSPACE=/workspace
 ENV WRITE_FILE_TOOL_TEMP_DIR=/tmp/agent-write-file
+ENV AGENT_ORCHESTRATOR_SOCKET=/run/agent/orchestrator.sock
+ENV AGENT_ORCHESTRATOR_TOOLS_FILE=/etc/agent/orchestrator-tools.json
 ENTRYPOINT ["/usr/local/bin/shell-tool"]

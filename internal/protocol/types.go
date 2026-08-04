@@ -106,6 +106,12 @@ const (
 	ErrWriteRollbackConflict = -32530
 	ErrWriteTransaction      = -32531
 	ErrWriteCanceled         = -32532
+
+	ErrOrchestratorInvalid      = -32540
+	ErrOrchestratorToolNotFound = -32541
+	ErrOrchestratorRoute        = -32542
+	ErrOrchestratorUnavailable  = -32543
+	ErrOrchestratorCapacity     = -32544
 )
 
 func NewResponse(id json.RawMessage, result any) Response {

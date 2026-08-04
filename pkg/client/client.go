@@ -15,13 +15,13 @@ type Notification struct {
 	Method string
 	Params json.RawMessage
 }
-type rpcError struct {
+type RPCError struct {
 	Code    int             `json:"code"`
 	Message string          `json:"message"`
 	Data    json.RawMessage `json:"data,omitempty"`
 }
 
-func (e *rpcError) Error() string { return fmt.Sprintf("JSON-RPC error %d: %s", e.Code, e.Message) }
+func (e *RPCError) Error() string { return fmt.Sprintf("JSON-RPC error %d: %s", e.Code, e.Message) }
 
 type envelope struct {
 	JSONRPC string          `json:"jsonrpc"`
@@ -29,7 +29,7 @@ type envelope struct {
 	Method  string          `json:"method,omitempty"`
 	Params  json.RawMessage `json:"params,omitempty"`
 	Result  json.RawMessage `json:"result,omitempty"`
-	Error   *rpcError       `json:"error,omitempty"`
+	Error   *RPCError       `json:"error,omitempty"`
 }
 type pendingResult struct {
 	result json.RawMessage

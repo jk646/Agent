@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1",
+  "tools": [
+    {
+      "name": "shell",
+      "socket": "/run/agent/shell-tool.sock",
+      "method_prefixes": ["exec.", "session."],
+      "required": true,
+      "description": "Linux command execution and PTY sessions"
+    },
+    {
+      "name": "file-edit",
+      "socket": "/run/agent/file-tool.sock",
+      "method_prefixes": ["file."],
+      "description": "Transactional file editing"
+    },
+    {
+      "name": "file-search",
+      "socket": "/run/agent/file-search-tool.sock",
+      "method_prefixes": ["search."],
+      "description": "File name and metadata search"
+    },
+    {
+      "name": "read-file",
+      "socket": "/run/agent/read-file-tool.sock",
+      "method_prefixes": ["read."],
+      "description": "Bounded file reading"
+    },
+    {
+      "name": "read-folder",
+      "socket": "/run/agent/read-folder-tool.sock",
+      "method_prefixes": ["read_folder."],
+      "description": "Folder structure reading"
+    },
+    {
+      "name": "search-text",
+      "socket": "/run/agent/search-text-tool.sock",
+      "method_prefixes": ["search_text."],
+      "description": "Text and regular expression search"
+    },
+    {
+      "name": "write-file",
+      "socket": "/run/agent/write-file-tool.sock",
+      "method_prefixes": ["write_file."],
+      "description": "Atomic complete-file writing"
+    }
+  ]
+}

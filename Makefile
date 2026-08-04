@@ -15,6 +15,9 @@ build:
 	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/search-text-tool-console ./cmd/search-text-tool-console
 	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/write-file-tool ./cmd/write-file-tool
 	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/write-file-tool-console ./cmd/write-file-tool-console
+	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/agent-orchestrator ./cmd/agent-orchestrator
+	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/agent-orchestrator-console ./cmd/agent-orchestrator-console
+	CGO_ENABLED=0 GOOS=linux go build -trimpath -o bin/agent-orchestrator-load ./cmd/agent-orchestrator-load
 
 test:
 	go test ./...

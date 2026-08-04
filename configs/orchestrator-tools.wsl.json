@@ -1,0 +1,12 @@
+{
+  "protocol_version": "1",
+  "tools": [
+    {"name":"shell","socket":"/tmp/agent-orchestrator/shell.sock","method_prefixes":["exec.","session."],"required":true},
+    {"name":"file-edit","socket":"/tmp/agent-orchestrator/file-edit.sock","method_prefixes":["file."]},
+    {"name":"file-search","socket":"/tmp/agent-orchestrator/file-search.sock","method_prefixes":["search."]},
+    {"name":"read-file","socket":"/tmp/agent-orchestrator/read-file.sock","method_prefixes":["read."]},
+    {"name":"read-folder","socket":"/tmp/agent-orchestrator/read-folder.sock","method_prefixes":["read_folder."]},
+    {"name":"search-text","socket":"/tmp/agent-orchestrator/search-text.sock","method_prefixes":["search_text."]},
+    {"name":"write-file","socket":"/tmp/agent-orchestrator/write-file.sock","method_prefixes":["write_file."]}
+  ]
+}

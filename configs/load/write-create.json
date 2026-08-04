@@ -1,0 +1,5 @@
+{
+  "path": "perf/{{run}}/{{id}}.txt",
+  "content": "line one\nTODO performance {{id}}\nline three\n",
+  "create_parents": true
+}
